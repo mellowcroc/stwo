@@ -483,6 +483,13 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_gpu_poseidon_constraints() {
+        use crate::core::backend::gpu::gen_trace::gen_trace as gen_trace_gpu;
+
+        pollster::block_on(gen_trace_gpu());
+    }
+
     #[test_log::test]
     fn test_simd_poseidon_prove() {
         // Note: To see time measurement, run test with
