@@ -33,7 +33,7 @@ impl FieldOps<SecureField> for SimdBackend {
 }
 
 /// An efficient structure for storing and operating on a arbitrary number of [`BaseField`] values.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct BaseColumn {
     pub data: Vec<PackedBaseField>,
     /// The number of [`BaseField`]s in the vector.
