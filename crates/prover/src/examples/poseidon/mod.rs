@@ -1,5 +1,6 @@
 //! AIR for Poseidon2 hash function from <https://eprint.iacr.org/2023/323.pdf>.
 
+use core::fmt::Debug;
 use std::ops::{Add, AddAssign, Mul, Sub};
 
 use itertools::Itertools;
@@ -195,9 +196,10 @@ pub fn eval_poseidon_constraints<E: EvalAtRow>(eval: &mut E, lookup_elements: &P
     eval.finalize_logup();
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct LookupData {
-    initial_state: [[BaseColumn; N_STATE]; N_INSTANCES_PER_ROW],
-    final_state: [[BaseColumn; N_STATE]; N_INSTANCES_PER_ROW],
+    pub initial_state: [[BaseColumn; N_STATE]; N_INSTANCES_PER_ROW],
+    pub final_state: [[BaseColumn; N_STATE]; N_INSTANCES_PER_ROW],
 }
 pub fn gen_trace(
     log_size: u32,
@@ -485,9 +487,18 @@ mod tests {
 
     #[test]
     fn test_gpu_poseidon_constraints() {
-        use crate::core::backend::gpu::gen_trace::gen_trace as gen_trace_gpu;
+        // use crate::core::backend::gpu::gen_trace::gen_trace as gen_trace_gpu;
+        use crate::core::backend::gpu::gen_trace_parallel::gen_trace_parallel as gen_trace_gpu;
 
-        pollster::block_on(gen_trace_gpu());
+        let log_n_instances = 13;
+        let log_n_instances_per_row = 3;
+        let log_n_rows = log_n_instances - log_n_instances_per_row;
+        let (_gpu_trace, _gpu_lookup_data) = pollster::block_on(gen_trace_gpu(log_n_rows));
+
+        let (_trace, _lookup_data) = gen_trace(log_n_rows);
+        let _cpu_trace = _trace.into_iter().map(|c| c.values.clone()).collect_vec();
+        assert_eq!(_cpu_trace, _gpu_trace);
+        assert_eq!(_lookup_data, _gpu_lookup_data);
     }
 
     #[test_log::test]
